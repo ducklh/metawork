@@ -1,0 +1,77 @@
+# Development version với hot reload và bind mounts
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: metawork-mongodb-dev
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: metawork
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data_dev:/data/db
+      - ./mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - metawork-network-dev
+
+  # Backend API với hot reload
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: metawork-backend-dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=5001
+      - MONGODB_URI=mongodb://admin:password123@mongodb:27017/metawork?authSource=admin
+      - JWT_SECRET=dev_jwt_secret_key
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - SESSION_SECRET=dev_session_secret
+      - CLIENT_URL=http://localhost:3000
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+    networks:
+      - metawork-network-dev
+
+  # Frontend với hot reload
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: metawork-frontend-dev
+    restart: unless-stopped
+    environment:
+      - REACT_APP_API_URL=http://localhost:5001/api
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_HOST=localhost
+      - WDS_SOCKET_PORT=3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - metawork-network-dev
+    stdin_open: true
+    tty: true
+
+volumes:
+  mongodb_data_dev:
+    driver: local
+
+networks:
+  metawork-network-dev:
+    driver: bridge

@@ -1,0 +1,21 @@
+{
+    "name": "metawork",
+    "version": "1.0.0",
+    "description": "Web application with React frontend and Node.js backend for authentication",
+    "scripts": {
+        "dev": "concurrently \"npm run server\" \"npm run client\"",
+        "server": "cd backend && npm run dev",
+        "client": "cd frontend && npm start",
+        "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+        "docker:up": "docker-compose up -d",
+        "docker:down": "docker-compose down",
+        "docker:dev": "docker-compose -f docker-compose.dev.yml up -d",
+        "docker:dev-down": "docker-compose -f docker-compose.dev.yml down",
+        "docker:logs": "docker-compose logs -f",
+        "docker:build": "docker-compose up -d --build",
+        "docker:clean": "docker-compose down -v && docker system prune -f"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
+}

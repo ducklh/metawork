@@ -1,0 +1,24 @@
+# Development Dockerfile với hot reload
+
+FROM node:18-alpine
+
+# Cài đặt nodemon global
+RUN npm install -g nodemon
+
+# Thiết lập thư mục làm việc
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Cài đặt tất cả dependencies (bao gồm devDependencies)
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 5000
+
+# Start với nodemon để hot reload
+CMD ["nodemon", "server.js"]
